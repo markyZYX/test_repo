@@ -1,0 +1,8 @@
+/.vs/*
+/build/*
+*.o
+/out/build
+/Folder.DotSettings.user
+/dev/
+.vs/
+/ext/gtest/out
