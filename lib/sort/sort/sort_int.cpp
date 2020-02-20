@@ -317,6 +317,11 @@ void radix_sort_int(int* vec, const int length, int* buffer)
   {
     nr_of_threads = 2;
   }
+  else if (length < 16)  // is there a minimum?
+  {
+    std::cout << "length must be at least 16!!!" << std::flush;
+    return;
+  }
 
   // index for all threads (on heap)
   const auto index_p = static_cast<std::unique_ptr<int[]>>(new int[THREAD_INDEX_INT_SIZE * MAX_INT_SORT_THREADS]);
@@ -364,8 +369,8 @@ void radix_sort_int(int* vec, const int length, int* buffer)
       memcpy(thread_index, &index[index_start], THREAD_INDEX_INT_SIZE * 4);
 
       // iterate uint64_t values
-      int hash_pos = pos_start;
-      int int64_pos = 2 * pos_start;
+      int hash_pos = 2 * pos_start;  // uint64_t offset
+      int int64_pos = hash_pos;
       for (int pos = pos_start; pos < pos_end; pos++) {
 
         // TODO: use cached hashes here !!!!!
@@ -400,20 +405,22 @@ void radix_sort_int(int* vec, const int length, int* buffer)
 
       // check last element in last thread
       if (thread == (nr_of_threads - 1)) {
-        for (int pos = pos_end * 4; pos < length; pos++)
+
+        uint64_t hash = 0;
+        for (int pos = pos_end * 4; pos < length; pos++)  // int offset
         {
           // determine value of source vec
           const int val = vec[pos];
-
-          const uint64_t val1 = val & 2047;
+          const int val1 = val & 2047;
 
           // set value in target buffer
           const int pos_low = thread_index[val1]++;
           buffer[pos_low] = val;
 
           // this uses only the lower 11 bits for speed
-          pair_vec[hash_pos++] = val1;
+          hash |= val1 >> ((pos % 4) * 11);  // 11 bits per hash
         }
+        pair_vec[hash_pos] = hash;  // we need at least 2 integers per thread (length_min == 2)
       }
     }
   }
@@ -421,7 +428,7 @@ void radix_sort_int(int* vec, const int length, int* buffer)
   t1 = cpu_cycles();
   std::cout << "count: " << (t1 - t0) / 10000 << "\n" << std::flush;
 
-  return;
+  //return;
 
   // phase 1: bit 11 - 21 occurence count
 
@@ -455,8 +462,8 @@ void radix_sort_int(int* vec, const int length, int* buffer)
       memcpy(thread_index, &index[index_start], THREAD_INDEX_INT_SIZE * 4);
 
       // iterate uint64_t values
-      int hash_pos = pos_start;
-      int int64_pos = 2 * pos_start;
+      int hash_pos = 2 * pos_start;  // uint64_t offset
+      int int64_pos = hash_pos;
       for (int pos = pos_start; pos < pos_end; pos++) {
 
         // first source vec
@@ -489,12 +496,12 @@ void radix_sort_int(int* vec, const int length, int* buffer)
 
 
       // check last elements in last thread
+      uint64_t hash = 0;
       if (thread == (nr_of_threads - 1)) {
         for (int pos = pos_end * 4; pos < length; pos++)
         {
           // determine value of source vec
           const int val = buffer[pos];
-
           const uint64_t val1 = (val >> 11) & 2047;
 
           // set value in target buffer
@@ -502,8 +509,10 @@ void radix_sort_int(int* vec, const int length, int* buffer)
           uvec[pos_low] = val;
 
           // this uses only the lower 11 bits for speed
-          buffer_pair_vec[hash_pos++] = val1;
+        // this uses only the lower 11 bits for speed
+          hash |= val1 >> ((pos % 4) * 11);  // 11 bits per hash
         }
+        buffer_pair_vec[hash_pos] = hash;
       }
     }
   }
@@ -536,7 +545,8 @@ void radix_sort_int(int* vec, const int length, int* buffer)
       memcpy(thread_index, &index[index_start], THREAD_INDEX_INT_SIZE * 4);
 
       // iterate uint64_t values
-      int int64_pos = 2 * pos_start;
+      int hash_pos = 2 * pos_start;  // uint64_t offset
+      int int64_pos = hash_pos;
       for (int pos = pos_start; pos < pos_end; pos++) {
 
         // first source vec
@@ -561,18 +571,21 @@ void radix_sort_int(int* vec, const int length, int* buffer)
       }
 
       // check last elements in last thread
+      uint64_t hash = 0;
       if (thread == (nr_of_threads - 1)) {
         for (int pos = pos_end * 4; pos < length; pos++)
         {
           // determine value of source vec
           const int val = vec[pos];
-
           const uint64_t val1 = ((val >> 22) & 1023) ^ 512;
 
           // set value in target buffer
           const int pos_low = thread_index[val1]++;
           buffer[pos_low] = val;
+
+          hash |= val1 >> ((pos % 4) * 11);  // 11 bits per hash
         }
+        pair_vec[hash_pos] = hash;
       }
     }
   }

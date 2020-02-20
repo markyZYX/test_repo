@@ -1,7 +1,7 @@
 
 # define test files
 set(testfstsort_SRCS
-	SetThreads.cpp
+	set_threads.cpp
 	sort_int_test.cpp
 	sort_logical_test.cpp
 )
