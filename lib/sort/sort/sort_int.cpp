@@ -279,13 +279,13 @@ inline void count_occurrences3(const int nr_of_threads, int* index, const uint64
         uint64_t val = pair_vec[int64_pos++];
 
         thread_index[((val >> 22) & 1023) ^ 512]++;  // byte 0
-        thread_index[((val >> 43) & 1023) ^ 512]++;  // byte 4
+        thread_index[((val >> 54) & 1023) ^ 512]++;  // byte 4
 
         // second source value
         val = pair_vec[int64_pos++];
 
         thread_index[((val >> 22) & 1023) ^ 512]++;  // byte 0
-        thread_index[((val >> 43) & 1023) ^ 512]++;  // byte 4
+        thread_index[((val >> 54) & 1023) ^ 512]++;  // byte 4
       }
 
       if (thread == (nr_of_threads - 1)) {
@@ -517,7 +517,6 @@ void radix_sort_int(int* vec, const int length, int* buffer)
     }
   }
 
-  return;
   // count bit 22 - 31
 
   // phase 3: bit 22 - 31 occurence count
