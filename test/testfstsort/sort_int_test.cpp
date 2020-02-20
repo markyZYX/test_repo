@@ -35,7 +35,9 @@ TEST_F(SortIntTest, IncreasingRange)
 	const int size = 100;
 	for (int pos = 0; pos < size; pos++) vec_p[pos] = 1;
 
-	radix_sort_int(vec_p, size, buffer_p);
+	uint64_t timings[20];
+
+	radix_sort_int(vec_p, size, buffer_p, timings);
 }
 
 
@@ -48,12 +50,15 @@ TEST_F(SortIntTest, DecreasingRange)
 
   for (int pos = 0; pos < vec_size; pos++) vec_p[pos] = 5 - pos;
 	vec_p[vec_size - 1] = 1;
-	radix_sort_int(vec_p, vec_size, buffer);
+
+	uint64_t timings[20];
+	radix_sort_int(vec_p, vec_size, buffer, timings);
 
 	// 8 integers
 	vec_size = 8;
 	for (int pos = 0; pos < vec_size; pos++) vec_p[pos] = 8 - pos;
-	radix_sort_int(vec_p, vec_size, buffer);
+
+	radix_sort_int(vec_p, vec_size, buffer, timings);
 }
 
 
@@ -70,5 +75,6 @@ TEST_F(SortIntTest, TwoThreads)
 
 	for (int pos = 0; pos < vec_size; pos++) vec_p[pos] = (pos % 2000) * 2048;
 
-	radix_sort_int(vec_p, vec_size, buffer_p);
+	uint64_t timings[20];
+	radix_sort_int(vec_p, vec_size, buffer_p, timings);
 }
