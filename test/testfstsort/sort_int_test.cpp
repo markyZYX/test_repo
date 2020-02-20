@@ -68,7 +68,7 @@ TEST_F(SortIntTest, TwoThreads)
 	const std::unique_ptr<uint32_t>	buffer = std::unique_ptr<uint32_t>(new uint32_t[vec_size]);
 	int* buffer_p = reinterpret_cast<int*>(buffer.get());
 
-	for (int pos = 0; pos < vec_size; pos++) vec_p[pos] = pos % 2000;
+	for (int pos = 0; pos < vec_size; pos++) vec_p[pos] = (pos % 2000) * 2048;
 
 	radix_sort_int(vec_p, vec_size, buffer_p);
 }
